@@ -1,12 +1,4 @@
--- =====================================================
--- SISTEMA DE RESERVAS ONLINE
--- Script de Criação do Banco de Dados
--- Compatível com MySQL 8.0
--- =====================================================
-
-CREATE DATABASE IF NOT EXISTS sistema_reservas_online
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE sistema_reservas_online;
 
 USE sistema_reservas_online;
 
@@ -21,8 +13,8 @@ CREATE TABLE usuario (
     email VARCHAR(100) NOT NULL UNIQUE,
     telefone VARCHAR(20),
     senha VARCHAR(255) NOT NULL,
-    data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+    data_cadastro DATETIME NOT NULL
+);
 
 -- =====================================================
 -- TABELA HOTEL
@@ -39,7 +31,7 @@ CREATE TABLE hotel (
     cidade VARCHAR(80),
     estado CHAR(2),
     cep VARCHAR(9)
-) ENGINE=InnoDB;
+);
 
 -- =====================================================
 -- TABELA CATEGORIA_QUARTO
@@ -49,7 +41,7 @@ CREATE TABLE categoria_quarto (
     id_categoria INT AUTO_INCREMENT PRIMARY KEY,
     descricao VARCHAR(60) NOT NULL,
     quantidade_pessoas INT NOT NULL
-) ENGINE=InnoDB;
+);
 
 -- =====================================================
 -- TABELA QUARTO
@@ -61,23 +53,19 @@ CREATE TABLE quarto (
     andar INT,
     descricao VARCHAR(150),
     valor_diaria DECIMAL(10,2) NOT NULL,
-    status ENUM('DISPONIVEL','OCUPADO','MANUTENCAO') DEFAULT 'DISPONIVEL',
+    status VARCHAR(20) NOT NULL,
 
     id_categoria INT NOT NULL,
     id_hotel INT NOT NULL,
 
     CONSTRAINT fk_quarto_categoria
         FOREIGN KEY (id_categoria)
-        REFERENCES categoria_quarto(id_categoria)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT,
+        REFERENCES categoria_quarto(id_categoria),
 
     CONSTRAINT fk_quarto_hotel
         FOREIGN KEY (id_hotel)
         REFERENCES hotel(id_hotel)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
-) ENGINE=InnoDB;
+);
 
 -- =====================================================
 -- TABELA RESERVA
@@ -85,31 +73,23 @@ CREATE TABLE quarto (
 
 CREATE TABLE reserva (
     id_reserva INT AUTO_INCREMENT PRIMARY KEY,
-
     data_checkin DATE NOT NULL,
     data_checkout DATE NOT NULL,
-    data_reserva DATETIME DEFAULT CURRENT_TIMESTAMP,
-
+    data_reserva DATETIME NOT NULL,
     valor_total DECIMAL(10,2) NOT NULL,
-
-    status ENUM('PENDENTE','CONFIRMADA','CANCELADA','FINALIZADA')
-           DEFAULT 'PENDENTE',
+    status VARCHAR(20) NOT NULL,
 
     id_usuario INT NOT NULL,
     id_quarto INT NOT NULL,
 
     CONSTRAINT fk_reserva_usuario
         FOREIGN KEY (id_usuario)
-        REFERENCES usuario(id_usuario)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT,
+        REFERENCES usuario(id_usuario),
 
     CONSTRAINT fk_reserva_quarto
         FOREIGN KEY (id_quarto)
         REFERENCES quarto(id_quarto)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
-) ENGINE=InnoDB;
+);
 
 -- =====================================================
 -- TABELA PAGAMENTO
@@ -117,22 +97,9 @@ CREATE TABLE reserva (
 
 CREATE TABLE pagamento (
     id_pagamento INT AUTO_INCREMENT PRIMARY KEY,
-
-    forma_pagamento ENUM(
-        'PIX',
-        'CARTAO_CREDITO',
-        'CARTAO_DEBITO',
-        'BOLETO'
-    ) NOT NULL,
-
+    forma_pagamento VARCHAR(40) NOT NULL,
     valor DECIMAL(10,2) NOT NULL,
-
-    status ENUM(
-        'PENDENTE',
-        'PAGO',
-        'CANCELADO'
-    ) DEFAULT 'PENDENTE',
-
+    status VARCHAR(20) NOT NULL,
     data_pagamento DATETIME,
 
     id_reserva INT NOT NULL UNIQUE,
@@ -140,9 +107,7 @@ CREATE TABLE pagamento (
     CONSTRAINT fk_pagamento_reserva
         FOREIGN KEY (id_reserva)
         REFERENCES reserva(id_reserva)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
-) ENGINE=InnoDB;
+);
 
 -- =====================================================
 -- TABELA AVALIACAO
@@ -150,21 +115,13 @@ CREATE TABLE pagamento (
 
 CREATE TABLE avaliacao (
     id_avaliacao INT AUTO_INCREMENT PRIMARY KEY,
-
-    nota TINYINT NOT NULL,
-
+    nota INT NOT NULL,
     comentario TEXT,
-
-    data_avaliacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    data_avaliacao DATETIME,
 
     id_reserva INT NOT NULL UNIQUE,
-
-    CONSTRAINT chk_nota
-        CHECK (nota BETWEEN 1 AND 5),
 
     CONSTRAINT fk_avaliacao_reserva
         FOREIGN KEY (id_reserva)
         REFERENCES reserva(id_reserva)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
-) ENGINE=InnoDB;
+);
